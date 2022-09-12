@@ -14,19 +14,20 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 from torchvision import datasets
 
-from models import Conv2
+from models import Conv2, resnet18
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 def parse_cli_arguments():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-e", "--epochs", type=int, help="Number of epochs to train the model", default=10)
-    parser.add_argument("-l", "--learning-rate", type=float, help="Learning rate", default=0.001)
-    parser.add_argument("-w", "--workers", type=int, help="Number of workers to train the model", default=4)
     parser.add_argument("-b", "--batch-size", type=int, help="Batch size", default=20)
     parser.add_argument("-d", "--data-dir", type=str, help="Data directory containing {train, val, test} folders", default="sample_dataset")
-    parser.add_argument("-s", "--save-dir", type=str, help="Model save directory", default="out")
+    parser.add_argument("-e", "--epochs", type=int, help="Number of epochs to train the model", default=10)
+    parser.add_argument("-l", "--learning-rate", type=float, help="Learning rate", default=0.001)
+    parser.add_argument("-m", "--model", type=str, help="Model to use for training", default="conv2d")
     parser.add_argument("-n", "--save-model-name", type=str, help="Model save name", default="model.pt")
+    parser.add_argument("-s", "--save-dir", type=str, help="Model save directory", default="out")
+    parser.add_argument("-w", "--workers", type=int, help="Number of workers to train the model", default=4)
     return parser.parse_args()
 
 def get_datasets(data_dir):
@@ -160,8 +161,15 @@ if __name__ == "__main__":
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print('Using device:', device)
-
-    model = Conv2(n_classes)
+    
+    if args.model.lower() == "conv2d":
+        model = Conv2(n_classes)
+    elif args.model.lower() == "resnet18":
+        model = resnet18(num_classes = n_classes)
+    else:
+        # Default case
+        model = Conv2(n_classes)
+        
     model = model.to(device)
 
     criterion_transfer = nn.CrossEntropyLoss()
